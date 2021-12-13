@@ -1,23 +1,7 @@
-name: 'Flake8'
-description: 'Lint Python code with Flake8'
+name: 'Black'
+description: 'Auto Lint Python code with Black'
 author: 'ixxeL'
 inputs:
-  format:
-    description: 'Format errors according to the chosen formatter [default | pylint | json]'
-    required: false
-    default: 'pylint'
-  exit-zero:
-    description: 'Exit with status code "0" even if there are errors'
-    required: false
-    default: 'true'
-  ignore-error:
-    description: 'Comma-separated list of errors and warnings to ignore'
-    required: false
-    default: 'E501'    
-  output-file:
-    description: 'Redirect report to a file'
-    required: false
-    default: '""'    
   working-dir:
     description: 'directory in which to find the Dockerfile'
     required: false
@@ -28,39 +12,14 @@ runs:
   steps:
     - id: flake8
       run: |
-        set +e
-        echo -e "${BLUE}[ STEP - LINTING CODE ] > Linting Python code with Flake8.${BLANK}"
-        echo -e "${CYAN}[ INFO ] > Flake8 version.${BLANK}"
-        flake8 --version
-        echo -e "${YELLOW}[ EXECUTING ] > Executing Python code linting.${BLANK}"
-        echo -e "${CYAN}[ INFO ] > Flake8 linting result.${BLANK}"
-        if [[ ${{ inputs.exit-zero }} = true ]]
-        then
-          NO_ERROR="--exit-zero"
-        else
-          NO_ERROR=""
-        fi
-
-        if [[ ${{ inputs.format }} != "json" ]]
-        then
-          flake8 ${{ inputs.working-dir }} --format=${{ inputs.format }} --count --output-file=${{ inputs.output-file }} ${NO_ERROR}
-        else
-          flake8 ${{ inputs.working-dir }} --format=${{ inputs.format }} --count --output-file=${{ inputs.output-file }} ${NO_ERROR} | jq -C
-        fi
-        EXIT_CODE="${PIPESTATUS[0]}"
-
-        echo -e "${CYAN}[ INFO ] > Flake8 linting summary.${BLANK}"
-        flake8 ${{ inputs.working-dir }} --statistics -q --exit-zero
-        echo -e "${CYAN}[ INFO ] > Flake8 performances summary.${BLANK}"
-        flake8 ${{ inputs.working-dir }} --benchmark -q --exit-zero
-
-        if [[ ${EXIT_CODE} -ne 0 ]]
-        then
-          echo -e "${RED}[ FAIL ] > Flake8 scan failed.${BLANK}"
-          exit ${EXIT_CODE}
-        else
-          echo -e "${GREEN}[ SUCCESS ] > Flake8 scan succeeded.${BLANK}"
-        fi
+        echo -e "${BLUE}[ STEP - AUTO-LINTING CODE ] > Linting Python code with Black.${BLANK}"
+        echo -e "${CYAN}[ INFO ] > Black version.${BLANK}"
+        black --version
+        echo -e "${YELLOW}[ EXECUTING ] > Executing Python code auto-linting in ${{ inputs.working-dir }} directory.${BLANK}"
+        echo -e "${CYAN}[ INFO ] > Black linting result.${BLANK}"
+        black --color --diff ${{ inputs.working-dir }}
+        echo -e "${CYAN}[ INFO ] > Processing Black linting...${BLANK}"
+        black -v ${{ inputs.working-dir }}
       shell: bash
       env:
         RED: \033[1;31m
